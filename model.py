@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 
 class Model:
-    def __init__(self, C: int = 100):
+    def __init__(self, C: int = 100,  method: str = 'L-BFGS-B'):
         """
         :param C:  Weight of the logistic loss function
         """
@@ -14,6 +14,7 @@ class Model:
         self.optimal_n = None
         self.C = C
         self.loss_history = []
+        self.method = method
 
     def _logistic_loss(self, params, X, y):
         n_samples, n_features = X.shape
@@ -25,7 +26,7 @@ class Model:
         self.loss_history.append(loss)
         return loss
 
-    def fit(self, X, y, verbose = True):
+    def fit(self, X, y, verbose = False):
         self.loss_history.clear()
         n_samples, n_features = X.shape
 
@@ -36,15 +37,15 @@ class Model:
         initial_b = np.random.normal(0, 1, 1)
         initial_params = np.append(np.append(n, p), initial_b)
 
-        result = minimize(self._logistic_loss, initial_params, args=(X, y), method='L-BFGS-B', bounds=bounds)
+        result = minimize(self._logistic_loss, initial_params, args=(X, y), method=self.method, bounds=bounds)
+
+        optimal_params = result.x
+        self.optimal_n = optimal_params[:n_features]
+        self.optimal_p = optimal_params[n_features:2 * n_features]
+        self.optimal_w = self.optimal_n - self.optimal_p
+        self.optimal_b = optimal_params[-1]
 
         if verbose:
-            optimal_params = result.x
-            self.optimal_n = optimal_params[:n_features]
-            self.optimal_p = optimal_params[n_features:2 * n_features]
-            self.optimal_w = self.optimal_n - self.optimal_p
-            self.optimal_b = optimal_params[-1]
-
             print(f"Optimal n:\n {self.optimal_n}")
             print("-" * 75)
             print(f"Optimal p:\n {self.optimal_p}")
@@ -64,12 +65,15 @@ class Model:
         proba = self.predict_proba(X)
         return np.where(proba >= 0.5, 1, -1)
 
-    def plot_loss_history(self):
-        plt.figure(figsize=(10, 6))
+    def get_loss_history(self):
+        return self.loss_history
+
+    def plot_loss_history(self, w=10, h=6):
+        plt.figure(figsize=(w, h))
         plt.plot(self.loss_history, label='Logistic Loss')
         plt.xlabel('Iteration')
         plt.ylabel('Logistic Loss')
-        plt.title('Learning Curve')
+        plt.title(f'Learning Curve, method: {self.method}')
         plt.legend()
         plt.grid(True)
         plt.show()
