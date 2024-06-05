@@ -65,6 +65,15 @@ class Model:
         proba = self.predict_proba(X)
         return np.where(proba >= 0.5, 1, -1)
 
+    def get_optimal_parameters(self):
+        params = {
+            'n': self.optimal_n,
+            'p': self.optimal_p,
+            'w': self.optimal_w,
+            'b': self.optimal_b
+        }
+        return params
+
     def get_loss_history(self):
         return self.loss_history
 
