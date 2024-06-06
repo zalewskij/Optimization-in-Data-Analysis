@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 
 class Model:
-    def __init__(self, C: int = 100,  method: str = 'L-BFGS-B', tol: float = None, max_iter: float = 1000):
+    def __init__(self, C: int = 100, method: str = 'L-BFGS-B', options: dict = None):
         """
         :param C:  Weight of the logistic loss function
         """
@@ -13,9 +13,8 @@ class Model:
         self.optimal_p = None
         self.optimal_n = None
         self.min_loss = None
-        self.max_iter = max_iter
+        self.options = options
         self.C = C
-        self.tol = tol
         self.loss_history = []
         self.method = method
 
@@ -25,11 +24,11 @@ class Model:
         p = params[n_features:2 * n_features]
         b = params[-1]
 
-        loss = self.C * np.mean(np.log(1 + np.exp(-y * (np.dot(X, n-p) + b)))) + np.sum(n + p)
+        loss = self.C * np.mean(np.log(1 + np.exp(-y * (np.dot(X, n - p) + b)))) + np.sum(n + p)
         self.loss_history.append(loss)
         return loss
 
-    def fit(self, X, y, verbose = False):
+    def fit(self, X, y, verbose=False):
         self.loss_history.clear()
         n_samples, n_features = X.shape
 
@@ -39,8 +38,10 @@ class Model:
         p = np.random.normal(0, 1, n_features)
         initial_b = np.random.normal(0, 1, 1)
         initial_params = np.append(np.append(n, p), initial_b)
-        options = {'maxiter': self.max_iter, 'disp': False}
-        result = minimize(self._logistic_loss, initial_params, args=(X, y), method=self.method, bounds=bounds, tol=self.tol, options=options)
+        if self.options is None:
+            result = minimize(self._logistic_loss, initial_params, args=(X, y), method=self.method, bounds=bounds)
+        else:
+            result = minimize(self._logistic_loss, initial_params, args=(X, y), method=self.method, bounds=bounds, options=self.options)
 
         optimal_params = result.x
         self.optimal_n = optimal_params[:n_features]
