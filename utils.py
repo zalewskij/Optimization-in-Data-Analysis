@@ -55,3 +55,24 @@ def run_experiment(X_, y_, iter_=10, methods_=['L-BFGS-B', 'COBYLA', 'SLSQP'], t
             accuracies_[m].append(accuracy_score(y_test_, y_pred_))
             optimal_parameters_[m] = model_.get_optimal_parameters()
     return accuracies_, loss_histories_, optimal_parameters_
+
+def run_experiment_and_collect_weights(X_, y_, tol = None, max_iter=1000, C = [500,400,300,200,100,50,25,10,5,2,1,0.5,0.25,0]):
+    accuracies_ = {m: [] for m in C}
+    loss_histories_ = {m: [] for m in C}
+    optimal_parameters_ = {m: [] for m in C}
+    X_train_, X_test_, y_train_, y_test_ = train_test_split(X_, y_, test_size=0.2, random_state=0)
+
+    for c in C:
+        model_ = Model(method='L-BFGS-B', tol=tol, max_iter=max_iter, C=c)
+        model_.fit(X_train_, y_train_)
+        loss_histories_[c].append(model_.get_loss_history())
+        y_pred_ = model_.predict(X_test_)
+        accuracies_[c].append(accuracy_score(y_test_, y_pred_))
+        optimal_parameters_[c].append(model_.get_optimal_parameters())
+
+    return accuracies_, loss_histories_, optimal_parameters_
+
+
+
+
+
