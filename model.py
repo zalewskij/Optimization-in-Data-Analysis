@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 
 class Model:
-    def __init__(self, C: int = 100,  method: str = 'L-BFGS-B', tol: float = None, max_iter: float = None):
+    def __init__(self, C: int = 100,  method: str = 'L-BFGS-B', tol: float = None, max_iter: float = 1000):
         """
         :param C:  Weight of the logistic loss function
         """

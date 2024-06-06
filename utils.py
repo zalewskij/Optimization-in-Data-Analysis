@@ -41,7 +41,7 @@ def plot_loss_histories_one_plot(loss_histories_, idx=0):
     plt.show()
 
 
-def run_experiment(X_, y_, iter_=10, methods_=['L-BFGS-B', 'COBYLA', 'SLSQP'], tol = None, max_iter=None):
+def run_experiment(X_, y_, iter_=10, methods_=['L-BFGS-B', 'COBYLA', 'SLSQP'], tol = None, max_iter=1000):
     accuracies_ = {m: [] for m in methods_}
     loss_histories_ = {m: [] for m in methods_}
     optimal_parameters_ = {m: [] for m in methods_}
