@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 
 class Model:
-    def __init__(self, C: int = 100,  method: str = 'L-BFGS-B'):
+    def __init__(self, C: int = 100,  method: str = 'L-BFGS-B', tol: float = None, max_iter: float = None):
         """
         :param C:  Weight of the logistic loss function
         """
@@ -12,7 +12,10 @@ class Model:
         self.optimal_w = None
         self.optimal_p = None
         self.optimal_n = None
+        self.min_loss = None
+        self.max_iter = max_iter
         self.C = C
+        self.tol = tol
         self.loss_history = []
         self.method = method
 
@@ -36,14 +39,15 @@ class Model:
         p = np.random.normal(0, 1, n_features)
         initial_b = np.random.normal(0, 1, 1)
         initial_params = np.append(np.append(n, p), initial_b)
-
-        result = minimize(self._logistic_loss, initial_params, args=(X, y), method=self.method, bounds=bounds)
+        options = {'maxiter': self.max_iter, 'disp': False}
+        result = minimize(self._logistic_loss, initial_params, args=(X, y), method=self.method, bounds=bounds, tol=self.tol, options=options)
 
         optimal_params = result.x
         self.optimal_n = optimal_params[:n_features]
         self.optimal_p = optimal_params[n_features:2 * n_features]
         self.optimal_w = self.optimal_n - self.optimal_p
         self.optimal_b = optimal_params[-1]
+        self.min_loss = result.fun
 
         if verbose:
             print(f"Optimal n:\n {self.optimal_n}")
@@ -67,10 +71,11 @@ class Model:
 
     def get_optimal_parameters(self):
         params = {
-            'n': self.optimal_n,
-            'p': self.optimal_p,
-            'w': self.optimal_w,
-            'b': self.optimal_b
+            'Optimal n': self.optimal_n,
+            'Optimal p': self.optimal_p,
+            'Optimal w': self.optimal_w,
+            'Optimal b': self.optimal_b,
+            'Minimum loss': self.min_loss
         }
         return params
 
