@@ -20,14 +20,14 @@ def plot_loss_histories(loss_histories_, idx=0):
     plt.show()
 
 
-def plot_loss_histories_one_plot_log(loss_histories_, idx=0):
+def plot_loss_histories_one_plot_log(loss_histories_, dataset, idx=0):
     plt.figure(figsize=(5, 4))
     for method, history_list in loss_histories_.items():
         history = history_list[idx]
         plt.plot(np.log(history), label=f'Method: {method}')
-    plt.title("Loss Histories")
+    plt.title(f"Log loss histories - {dataset}")
     plt.xlabel("Iteration")
-    plt.ylabel("Loss")
+    plt.ylabel("Log loss")
     plt.legend()
     plt.show()
 
@@ -37,14 +37,14 @@ def plot_loss_histories_one_plot(loss_histories_, idx=0):
     for method, history_list in loss_histories_.items():
         history = history_list[idx]
         plt.plot(history, label=f'Method: {method}')
-    plt.title("Loss Histories")
+    plt.title("Loss histories")
     plt.xlabel("Iteration")
     plt.ylabel("Loss")
     plt.legend()
     plt.show()
 
 
-def run_experiment(X_, y_, iter_=10, methods_=['L-BFGS-B', 'COBYLA', 'SLSQP'], options_={'L-BFGS-B': None, 'COBYLA': None, 'SLSQP': None}):
+def run_experiment(X_, y_, iter_=10, methods_=['L-BFGS-B', 'SLSQP'], options_={'L-BFGS-B': None, 'SLSQP': None}):
     accuracies_ = {m: [] for m in methods_}
     loss_histories_ = {m: [] for m in methods_}
     optimal_parameters_ = {m: [] for m in methods_}
@@ -72,6 +72,7 @@ def plot_accuracies(all_accuracies):
             accuracies_data.append(acc_list)
 
         axs[i].boxplot(accuracies_data, labels=dataset_names)
+        axs[i].set_ylim([0.85, 1.0])
         axs[i].set_title(dataset_name)
         axs[i].set_ylabel('Accuracy')
         axs[i].grid(True)
@@ -95,12 +96,13 @@ def get_dataset(id, l1, l2):
 
 
 def test_and_plot_parameters(X, y, params_, iter_=10):
-    fig, axes = plt.subplots(len(params_), 3, figsize=(15, 10))
+    fig, axes = plt.subplots(3, len(params_), figsize=(10, 9), sharey='row')
     fig.tight_layout(pad=5.0, h_pad=3.0, w_pad=3.0)
+
     for i, (method, param) in enumerate(params_.items()):
         for j, (param_name, values) in enumerate(param.items()):
             avg_min_losses, values = test_parameter(X, y, params_[method], method, param_name, iter_=iter_)
-            plot_parameter_results(avg_min_losses, values, method, param_name, axes[i, j])
+            plot_parameter_results(avg_min_losses, values, method, param_name, axes[j, i])
     plt.show()
 
 
@@ -134,7 +136,7 @@ def run_experiment_and_collect_weights(X_, y_, tol = None, max_iter=1000, C = [5
     X_train_, X_test_, y_train_, y_test_ = train_test_split(X_, y_, test_size=0.2, random_state=0)
 
     for c in C:
-        model_ = Model(method='L-BFGS-B', tol=tol, max_iter=max_iter, C=c)
+        model_ = Model(method='L-BFGS-B', C=c)
         model_.fit(X_train_, y_train_)
         loss_histories_[c].append(model_.get_loss_history())
         y_pred_ = model_.predict(X_test_)
